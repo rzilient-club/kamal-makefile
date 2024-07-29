@@ -61,6 +61,7 @@ rubocop:
 
 kamal:
 	@echo "$(PALE_GREEN)Please select an environment to deploy using Kamal:$(COLOUR_END)"
+	@echo "	0) $(PALE_GREEN)Provision components (docker,network,firewall,etc...)$(COLOUR_END)"
 	@echo "	1) $(LIGHT_GREEN)Setup environment$(COLOUR_END)"
 	@echo "	2) $(LIGHT_LIME_GREEN)Generate and push environment file$(COLOUR_END)"
 	@echo "	3) $(VERY_LIGHT_GREEN)Build and deploy$(COLOUR_END)"
@@ -69,6 +70,14 @@ kamal:
 	@echo "	6) $(LIGHT_LIME_GREEN)Run rails console$(COLOUR_END)"
 	@read -p "Enter your choice:" choice; \
 	case $$choice in \
+		0) \
+        	echo "$(GREEN)Provision components in $(ENV) environment...$(COLOUR_END)"; \
+        	if [ -n "$(ENV)" ]; then \
+               	provision; \
+            else \
+               	provision; \
+            fi; \
+        	;; \
 		1) \
         	echo "$(GREEN)Kamal setup in $(ENV) environment...$(COLOUR_END)"; \
         	if [ -n "$(ENV)" ]; then \

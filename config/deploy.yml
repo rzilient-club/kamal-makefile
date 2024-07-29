@@ -1,0 +1,78 @@
+# Name of your application. Used to uniquely configure containers.
+service: your_service
+
+# Name of the container image.
+image: you_image_name
+
+# Run first provision script to install docker, letencrypt, private network, etc...
+
+# Deploy to these servers.
+# Access DO droplet console and run the following commands first:
+# $ mkdir -p /letsencrypt
+# $ touch /letsencrypt/acme.json
+# $ chmod 600 /letsencrypt/acme.json
+
+# Also create the shared_network for docker containers
+# docker network create shared_network
+servers:
+  web:
+    hosts:
+      - XXX.XXX.XXX.XXX
+    labels:
+      traefik.http.routers.referral-web.rule: Host(`your_domain`)
+      traefik.http.routers.referral-web-secure.entrypoints: websecure
+      traefik.http.routers.referral-web-secure.rule: Host(`your_domain`)
+      traefik.http.routers.referral-web-secure.tls: true
+      traefik.http.routers.referral-web-secure.tls.certresolver: letsencrypt
+    options:
+      network: "shared_network"
+    cmd: ./bin/rails s -b 0.0.0.0 -p 3000
+
+# Credentials for your image host.
+registry:
+  # Specify the registry server, if you're not using Docker Hub
+  server: your_registry_server
+  username: your_registry_server_username
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+# Inject ENV variables into containers (secrets come from .env).
+# Remember to run `kamal env push` after making changes!
+env:
+  clear:
+    RAILS_ENV: production
+    RACK_ENV: production
+    RAILS_LOG_TO_STDOUT: true
+    RAILS_SERVE_STATIC_FILES: enabled
+  #     DB_HOST: 192.168.0.2
+  secret:
+    - RAILS_MASTER_KEY
+    - DATABASE_URL
+    - REDIS_URL
+
+healthcheck:
+  interval: 20s
+# Use a different ssh user than root
+# ssh:
+#   user: app
+
+# Configure builder setup.
+builder:
+  dockerfile: Dockerfile
+  multiarch: false
+
+traefik:
+  options:
+    publish:
+      - "443:443"
+    volume:
+      - "/letsencrypt/acme.json:/letsencrypt/acme.json"
+    network: "shared_network"
+  args:
+    entryPoints.web.address: ":80"
+    entryPoints.websecure.address: ":443"
+    certificatesResolvers.letsencrypt.acme.email: "name@example.com"
+    certificatesResolvers.letsencrypt.acme.storage: "/letsencrypt/acme.json"
+    certificatesResolvers.letsencrypt.acme.httpchallenge: true
+    certificatesResolvers.letsencrypt.acme.httpchallenge.entrypoint: web
+    certificatesResolvers.letsencrypt.acme.certificatesDuration: 90
