@@ -11,3 +11,5 @@ gem 'rails', '~> 7.1', '>= 7.1.3'
 gem 'puma', '~> 6.0'
 # Kamal gem
 gem 'kamal', '~> 1.8', '>= 1.8.0'
+# Dotenv for manage environment files
+gem 'dotenv-rails'
