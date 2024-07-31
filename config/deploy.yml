@@ -2,18 +2,14 @@
 service: your_service
 
 # Name of the container image.
-image: you_image_name
+image: your_image_name
 
-# Run first provision script to install docker, letencrypt, private network, etc...
+# Run first provision script to install docker, letsencrypt, private network, firewall etc...
+# on every host defined
+# $ chmod +x provision
+# $ provision
 
 # Deploy to these servers.
-# Access DO droplet console and run the following commands first:
-# $ mkdir -p /letsencrypt
-# $ touch /letsencrypt/acme.json
-# $ chmod 600 /letsencrypt/acme.json
-
-# Also create the shared_network for docker containers
-# docker network create shared_network
 servers:
   web:
     hosts:
@@ -44,7 +40,8 @@ env:
     RACK_ENV: production
     RAILS_LOG_TO_STDOUT: true
     RAILS_SERVE_STATIC_FILES: enabled
-  #     DB_HOST: 192.168.0.2
+    RUBY_OPT: --enable-yjit
+    LANG: en_US.UTF-8
   secret:
     - RAILS_MASTER_KEY
     - DATABASE_URL
@@ -52,15 +49,20 @@ env:
 
 healthcheck:
   interval: 20s
+
 # Use a different ssh user than root
+# User name has to match the one as part of the provision process
 # ssh:
 #   user: app
 
 # Configure builder setup.
 builder:
+  secrets:
+    - secrets
   dockerfile: Dockerfile
   multiarch: false
 
+# Traefik default configuration
 traefik:
   options:
     publish:
